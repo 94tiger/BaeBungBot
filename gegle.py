@@ -30,7 +30,7 @@ def get_html2(url):
 
 def get_gegle(gallery):
     """
-    :param gallery : 갤러리 str ex)야구갤러리 baseball_new8
+    :param gallery : 갤러리 str ex)야구갤러리 baseball_new11
     :return: [index, [제목, 리플수, 링크]]
     """
     if str(gallery) == "issuezoom" or str(gallery) == "hit":
@@ -45,7 +45,6 @@ def get_gegle(gallery):
     elements = soup.find_all('div', {'class': 'gall-detail-lnktb'})
 
     gegle = []
-
     title = []
     link = []
     comment = []
@@ -67,6 +66,7 @@ def get_gegle(gallery):
         line = [title[i], comment[i], link[i]]
 
         gegle.append(line)
+
     return gegle
 
 
@@ -103,13 +103,12 @@ def get_mgegle(gallery):
     return gegle
 
 
+# 개드립 목록 가져오기
 def get_dogdrip():
     url = ("https://www.dogdrip.net/dogdrip")
-    # URL = "https://gall.dcinside.com/board/lists?id=baseball_new7&exception_mode=recommend"
-    html = get_html2(url)
+    html = get_html(url)
     soup = BeautifulSoup(html, 'html.parser')
-    element = soup.find_all('td', {'class': 'title'})
-    # print(element)
+    element = soup.find_all('h5', {'class': 'ed title margin-remove'})
 
     dogdrip = []
     for i in range(1, 6):
@@ -117,24 +116,17 @@ def get_dogdrip():
 
         link = element[i]
         dogdrip_link = link.find('a')['href']
-        dogdrip_name = link.find("span", {"class": "ed title-link"}).text
-        dogdrip_reply = link.find("span", {"class": "ed text-primary"}).text
+        dogdrip_name = link.find("a", {"class": "ed title-link"}).text
+        dogdrip_reply = link.find("span", {"class": "ed text-primary text-xxsmall"}).text
 
         line.append(dogdrip_name)
         line.append("[" + dogdrip_reply + "]")
         line.append(dogdrip_link)
 
         dogdrip.append(line)
-        # gegle = [index, [제목, 리플수, 링크]]
-
-    # 리스트 출력
-    # for i in range(len(dogdrip)):
-    #     for j in range(len(line)):
-    #         print(dogdrip[i][j])
-    #     print()
+    # print(dogdrip)
+    # return 값 : list [제목, 댓글수, 링크]
     return dogdrip
-
-    # URL = "https://gall.dcinside.com/board/lists?id=baseball_new7&exception_mode=recommend"
 
 
 def get_dogdrip_post():

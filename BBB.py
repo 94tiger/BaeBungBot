@@ -105,6 +105,7 @@ async def 골라(interaction : discord.Interaction, 항목: str):
     await interaction.response.send_message("`" +interaction.user.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.", ephemeral=False)
     # await ctx.send("`" + ctx.author.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.")
 
+
 @tree.command(name = '뭐먹지', description='음식 메뉴를 골라줍니다.')
 async def 뭐먹지(interaction : discord.Interaction):
     food = config.food
@@ -117,7 +118,7 @@ async def 뭐먹지(interaction : discord.Interaction):
 
 # 롤 전적 확인
 @tree.command(name = '롤', description='롤 전적을 보여줍니다. (fow기반)')
-async def lolstat(interaction : discord.Interaction, 닉네임: str):
+async def 롤(interaction : discord.Interaction, 닉네임: str):
     now = time_now()
 
     stat = game_stat.get_lol_stat3(닉네임)
@@ -144,7 +145,7 @@ async def lolstat(interaction : discord.Interaction, 닉네임: str):
 
 # 롤체 전적 확인
 @tree.command(name = '롤체', description='롤체 전적을 보여줍니다.')
-async def lolchess_stat(interaction : discord.Interaction, 닉네임: str):
+async def 롤체(interaction : discord.Interaction, 닉네임: str):
     now = time_now()
     stat = game_stat.get_lolchess_stat(닉네임)
     # stat = [랭크유무, 프로필이미지링크, 티어아이콘링크, 티어, 승수, 승률, top4, top비율, 게임수, 평균등수]
@@ -171,7 +172,7 @@ async def lolchess_stat(interaction : discord.Interaction, 닉네임: str):
 
 # 념글 확인
 @tree.command(name = '념글', description='DCinside 개념글을 보여줍니다.')
-async def lolchess_stat(interaction : discord.Interaction, 갤러리: str):
+async def 념글(interaction : discord.Interaction, 갤러리: str):
     gallery_name = 갤러리
     if gallery_name == "힛갤":
         gallery_str = "hit"
@@ -186,13 +187,24 @@ async def lolchess_stat(interaction : discord.Interaction, 갤러리: str):
     if gallery_name == "롤갤":
         gallery_str = "leagueoflegends4"
     gegl = gegle.get_gegle(gallery_str)
-    gegl_value = ""
+    gegl_value: str = ""
     for i in range(len(gegl)):
         gegl_value = gegl_value + "{}. [{} [{}]]({}) \n".format(i+1, gegl[i][0], gegl[i][1], gegl[i][2])
     embed_gegl = discord.Embed(color=0xdc6363)
     embed_gegl.add_field(name=gallery_name + " 개념글", value=gegl_value, inline=False)
     await interaction.response.send_message(embed=embed_gegl, ephemeral=False)
 
+
+# 개드립 확인
+@tree.command(name = '개드립', description='Dogdrip.net 개드립을 보여줍니다.')
+async def 개드립(interaction : discord.Interaction):
+    gegl = gegle.get_dogdrip()
+    gegl_value: str = ""
+    for i in range(len(gegl)):
+        gegl_value = gegl_value + "{}. [{} [{}]]({}) \n".format(i+1, gegl[i][0], gegl[i][1], gegl[i][2])
+    embed_gegl = discord.Embed(color=0xdc6363)
+    embed_gegl.add_field(name="개드립", value=gegl_value, inline=False)
+    await interaction.response.send_message(embed=embed_gegl, ephemeral=False)
 
 client.run(config.TOKEN)
 
