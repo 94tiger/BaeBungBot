@@ -11,7 +11,8 @@ import config
 
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a",
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+                    format="[%(asctime)s] [%(levelname)-8s] %(message)s",
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def time_now():
@@ -51,14 +52,14 @@ async def 명령어(interaction: discord.Interaction):
                    "* /뭐먹지 - 메뉴 랜덤 \n"
                    "* /주사위 [굴릴 주사위]\n"
                    "# 기능 \n"
-                   # "* /경마 [1 2 3 ...] - 1 2 3 경마 \n"
+                   # "* /경마 [1 2 3 ...] - 1 2 3 경마 \n"/
                    # "* /전적 [배그아이디] [솔로|듀오|스쿼드|1솔로|1듀오|1스쿼드] - 배그 전적 검색 (dak.gg 기준 / 갱신 x)\n"
                    # "* /배그 [배그아이디] [솔로|듀오|스쿼드] - 배그 전적 검색 (pubg.op.gg 기준 / 갱신 o)\n"
                    "* /롤 [롤아이디] - 롤 전적 검색 (fow.kr 기준 / 갱신 x)\n"
                    "* /롤체 [롤체아이디] - 롤체 전적 검색 (lolchess.gg 기준 / 갱신 x)\n"
                    # "# /커뮤니티\n"
                    "* /념글 [힛갤|이슈줌|중갤|롤갤|돌갤|야갤] - 최신 개념글 목록\n"
-                   # "* /개드립 - 최신 개드립 목록 \n"
+                   "* /개드립 - 최신 개드립 목록 \n"
                    # "# 서버 \n"
                    # "* /해제 - 지옥 탈출"
                    "```")
@@ -99,8 +100,9 @@ async def 정보(interaction):
     logging.info(f"{interaction.user.display_name} - 정보 사용 ")
 
 
-@tree.command(name = '골라', description='입력한 항목중에서 무작위로 한개를 골라줍니다.')
-async def 골라(interaction : discord.Interaction, 항목: str):
+@tree.command(name='골라', description='입력한 항목중에서 무작위로 한개를 골라줍니다.')
+@app_commands.describe(항목='항목을 입력하세요. (공백으로 구분합니다.)')
+async def 골라(interaction: discord.Interaction, 항목: str):
     choice = str(항목).split(" ")
     choiceNum = random.randint(0, len(choice) - 1)
     choiceResult = choice[choiceNum]
@@ -109,7 +111,7 @@ async def 골라(interaction : discord.Interaction, 항목: str):
     logging.info(f"{interaction.user.display_name} - 골라 사용 - {choiceResult} of {choice}")
 
 
-@tree.command(name = '뭐먹지', description='음식 메뉴를 골라줍니다.')
+@tree.command(name='뭐먹지', description='음식 메뉴를 골라줍니다.')
 async def 뭐먹지(interaction : discord.Interaction):
     food = config.food
     food_choice = food.split(" ")
@@ -121,7 +123,8 @@ async def 뭐먹지(interaction : discord.Interaction):
 
 
 # 롤 전적 확인
-@tree.command(name = '롤', description='롤 전적을 보여줍니다. (fow기반)')
+@tree.command(name='롤', description='롤 전적을 보여줍니다. (fow기반)')
+@app_commands.describe(닉네임='소환사명')
 async def 롤(interaction : discord.Interaction, 닉네임: str):
     now = time_now()
 
@@ -153,7 +156,8 @@ async def 롤(interaction : discord.Interaction, 닉네임: str):
 
 
 # 롤체 전적 확인
-@tree.command(name = '롤체', description='롤체 전적을 보여줍니다.')
+@tree.command(name='롤체', description='롤체 전적을 보여줍니다.')
+@app_commands.describe(닉네임='소환사명')
 async def 롤체(interaction : discord.Interaction, 닉네임: str):
     now = time_now()
     stat = game_stat.get_lolchess_stat(닉네임)
@@ -182,7 +186,7 @@ async def 롤체(interaction : discord.Interaction, 닉네임: str):
 
 # 개념글 확인
 @tree.command(name='념글', description='DCinside 개념글을 보여줍니다.')
-@app_commands.describe(갤러리='검색할 DCinside 갤러리 목록')
+@app_commands.describe(갤러리='검색할 DCinside 갤러리')
 @app_commands.choices(갤러리=[
     discord.app_commands.Choice(name="힛갤", value="hit"),
     discord.app_commands.Choice(name="이슈줌", value="issuezoom"),
