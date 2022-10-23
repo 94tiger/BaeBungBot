@@ -41,7 +41,6 @@ def get_gegle(gallery):
 
     html = get_html(url)
     soup = BeautifulSoup(html, "html.parser")
-    # print(soup)
     elements = soup.find_all('div', {'class': 'gall-detail-lnktb'})
 
     gegle = []

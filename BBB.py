@@ -170,22 +170,21 @@ async def 롤체(interaction : discord.Interaction, 닉네임: str):
     await interaction.response.send_message(embed=embed_stat, ephemeral=False)
 
 
-# 념글 확인
-@tree.command(name = '념글', description='DCinside 개념글을 보여줍니다.')
-async def 념글(interaction : discord.Interaction, 갤러리: str):
-    gallery_name = 갤러리
-    if gallery_name == "힛갤":
-        gallery_str = "hit"
-    if gallery_name == "이슈줌":
-        gallery_str = "issuezoom"
-    if gallery_name == "중갤":
-        gallery_str = "aoegame"
-    if gallery_name == "돌갤":
-        gallery_str = "pebble"
-    if gallery_name == "야갤":
-        gallery_str = "baseball_new11"
-    if gallery_name == "롤갤":
-        gallery_str = "leagueoflegends4"
+# 개념글 확인
+@tree.command(name='념글', description='DCinside 개념글을 보여줍니다.')
+@app_commands.describe(갤러리='검색할 DCinside 갤러리 목록')
+@app_commands.choices(갤러리=[
+    discord.app_commands.Choice(name="힛갤", value="hit"),
+    discord.app_commands.Choice(name="이슈줌", value="issuezoom"),
+    discord.app_commands.Choice(name="중갤", value="aoegame"),
+    discord.app_commands.Choice(name="돌갤", value="pebble"),
+    discord.app_commands.Choice(name="야갤", value="baseball_new11"),
+    discord.app_commands.Choice(name="롤갤", value="leagueoflegends4")
+])
+async def 념글(interaction: discord.Interaction, 갤러리: discord.app_commands.Choice[str]):
+    gallery_str = 갤러리.value
+    gallery_name = 갤러리.name
+
     gegl = gegle.get_gegle(gallery_str)
     gegl_value: str = ""
     for i in range(len(gegl)):
@@ -196,7 +195,7 @@ async def 념글(interaction : discord.Interaction, 갤러리: str):
 
 
 # 개드립 확인
-@tree.command(name = '개드립', description='Dogdrip.net 개드립을 보여줍니다.')
+@tree.command(name='개드립', description='Dogdrip.net 개드립을 보여줍니다.')
 async def 개드립(interaction : discord.Interaction):
     gegl = gegle.get_dogdrip()
     gegl_value: str = ""
