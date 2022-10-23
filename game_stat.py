@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
+from pprint import pprint
 
 pattern = re.compile((r'\s+'))
 
@@ -336,22 +337,15 @@ def get_lol_stat(lolid):
         # 전적 검색
         league_stats = soup.find('div', {'class': 'league-stats'})
         stat_type = league_stats.find('div', {'class': 'type'}).text
-        # print(stat_type)
         stat_medal = league_stats.find('div', {'class': 'medal'})
         stat_medal_link = stat_medal.find('img').get('src')
-        # print(stat_medal_link)
         tier = league_stats.find('div', {'class': 'tier'}).text
-        # print(tier)
         lp = league_stats.find('div', {'class': 'lp'}).text
-        # print(lp)
         wl = league_stats.find('div', {'class': 'win-lose'}).text
-        # print(wl)
         wl = wl.split(' ')
-        # print(wl)
+
         win_lose = wl[0]+" " +wl[1]+wl[2]
         win_ratio = wl[3]
-        # print(win_lose)
-        # print(win_ratio)
     else:
         rank_available = False
 
@@ -375,80 +369,63 @@ def get_lol_stat3(lolid):
     URL = ("http://fow.kr/find/" + lolid)
     html = get_html(URL)
     soup = BeautifulSoup(html, 'html.parser')
-    print(soup)
+    # print(soup)
     stat = []
+    rank_available = True
+    """
+    fow 구조
+    SummonerRatingMedium > TierRankInfo > RankType, TierRank, TierInfo > LeaguePoints, WinLose > wins, losses, winratio 
+
+    :returns : stat = [profile_link, rank_img_link, ]
+    :returns : stat = [프로필이미지링크, 티어아이콘링크, 랭크타입, 현재티어, 점수, 승, 패, 승률]
+    """
 
     profile = soup.find('div', {'class': 'profile'})
     profile_link = profile.find('img')['src']
-    print(profile_link)
+
     rank = soup.find('div', {'class': 'table_summary'})
-    print(rank)
-    rank_img = rank.find('img', {'alt': '리그 등급'})
-    print(rank_img)
-    rank_num = str(rank)[str(rank).find('리그') + 4:str(rank).find('<br/>')]
-    print("======")
-    print(rank_num)
 
-    gegle_name = str(profile)[str(profile).find('/em>') + 4:str(profile).find('</a>')]
-    gegle_reply = str(profile)[str(profile).find('um">') + 4:str(profile).find('</span')]
+    rank_img_link = rank.find('img')['src']
 
+    rank_info = soup.select("div.table_summary > div:nth-child(2) > div:nth-child(2)")
+    rank_info = str(rank_info[0].text)
+    rank_info = rank_info.replace('\t', '')
+    rank_info = str(rank_info).split('\n')
+    rank_info = list(filter(None, rank_info))
 
-    """
-    op.gg 구조
-    SummonerRatingMedium > TierRankInfo > RankType, TierRank, TierInfo > LeaguePoints, WinLose > wins, losses, winratio 
-
-    :returns : stat = [recent_ent, rank_available, profile_image, tier_icon, rank_type, tier_rank, league_points, wins, losses, winratio]
-    :returns : stat = [최근전적[게임타입, 승패], 랭크유무, 프로필이미지링크, 티어아이콘링크, 랭크타입, 현재티어, 점수, 승, 패, 승률]
-    """
-    profile_image = soup.find('img', {'class': 'ProfileImage'})
-    profile_image = profile_image.get('src')
-    profile_image = "http:" + profile_image
-
-    solo_tier_info = soup.find('div', {'class': 'SummonerRatingMedium'})
-    tier_rank_info = solo_tier_info.find('div', {'class': 'TierRankInfo'})
-    tier_info = tier_rank_info.find('div', {'class': 'TierInfo'})
-
-    if solo_tier_info.find('div', {'class': 'Medal tip'}):
+    if len(rank_info)>=5:
         rank_available = True
-
-        tier_icon = solo_tier_info.find('div', {'class': 'Medal tip'})
-        tier_icon = tier_icon.find('img')
-        tier_icon = tier_icon.get('src')
-        tier_icon = "http:" + tier_icon
-
-        rank_type = tier_rank_info.find('div', {'class': 'RankType'}).text
-        tier_rank = tier_rank_info.find('div', {'class': 'TierRank'}).text
-
-        league_points = tier_info.find('span', {'class': 'LeaguePoints'}).text
-        league_points = re.sub(pattern, '', league_points)
-
-        wins = tier_info.find('span', {'class': 'wins'}).text
-        losses = tier_info.find('span', {'class': 'losses'}).text
-        winratio = tier_info.find('span', {'class': 'winratio'}).text
-
         stat.append(rank_available)
-        stat.append(profile_image)
-        stat.append(tier_icon)
-        stat.append(rank_type)
-        stat.append(tier_rank)
-        stat.append(league_points)
-        stat.append(wins)
-        stat.append(losses)
-        stat.append(winratio)
 
-        # = [rank_available, profile_image, tier_icon, rank_type, tier_rank, league_points, wins, losses, winratio]
+        rank_num = rank_info[0].strip("랭킹: ")
+        # print(rank_num)
+        rank_type = rank_info[1].strip("리그: ")
+        # print(rank_type)
+        rank_tier = rank_info[2].strip("등급: ")
+        # print(rank_tier)
+        # print(rank_info[3])
+        rank_point = rank_info[3].strip("리그 ")
+        rank_point = rank_point.strip("포인트: ")
+        # print(rank_point)
+        rank_test = rank_info[4].strip("승급전: ")
+        # print(rank_test)
+        rank_result = rank_info[5]
+        # print(rank_result)
+
+        stat.append(profile_link)
+        stat.append(rank_img_link)
+        stat.append(rank_num)
+        stat.append(rank_type)
+        stat.append(rank_tier)
+        stat.append(rank_point)
+        stat.append(rank_test)
+        stat.append(rank_result)
     else:
         rank_available = False
-
-        tier_icon = "http://opgg-static.akamaized.net/images/medals/default.png"
-
         stat.append(rank_available)
-        stat.append(profile_image)
-        stat.append(tier_icon)
 
     print(stat)
     return stat
-
 
 
 def get_lolchess_stat(lolid):
@@ -456,25 +433,26 @@ def get_lolchess_stat(lolid):
     URL = ("https://lolchess.gg/profile/kr/" + lolid)
     html = get_html(URL)
     soup = BeautifulSoup(html, 'html.parser')
-    print(soup)
+    # print(soup)
     stat = []
 
-    tier_icon = soup.find('div', {'class':'profile__tier__icon'})
+    tier_icon = soup.find('div', {'class': 'profile__tier__icon'})
     tier_icon = tier_icon.find('img')
+    tier_image_alt = tier_icon.get('alt')
     tier_icon_src = "http:" + tier_icon.get('src')
     tier_icon_text = tier_icon.get('alt')
-    tier_lp = soup.find('span', {'class':'profile__tier__summary__lp'}).text
-    tier_icon_text = tier_icon_text + " " + tier_lp
+
+    if tier_image_alt == "Unranked":
+        rank_available = False
+    else:
+        rank_available = True
+        tier_lp = soup.find('span', {'class': 'profile__tier__summary__lp'}).text
+        tier_icon_text = tier_icon_text + " " + tier_lp
 
     profile_image = soup.find('div', {'class': 'profile__icon'})
     profile_image = profile_image.find('img')
     profile_image_src = profile_image.get('src')
     profile_image_src = "http:" + profile_image_src
-    profile_image_alt = profile_image.get('alt')
-    if profile_image_alt == "Unranked":
-        rank_available = False
-    else:
-        rank_available = True
 
     stats = soup.find_all('span', {'class': 'profile__tier__stat__value float-right'})
     #승수, 승률, TOP수 TOP비율, 게임수, 평균등수
