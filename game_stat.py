@@ -366,64 +366,85 @@ def get_lol_stat(lolid):
 
 
 def get_lol_stat3(lolid):
+    """
+        stat: [계정 상태, 프로필링크, 랭크이미지링크, 랭크순위, 랭크타입, 랭크티어, 랭크점수, 승급전, 랭크결과]
+            계정 상태:
+                0: 아이디 없음
+                1: 랭크 전적 없음
+                2: 랭크 전적 있음
+    """
+
     URL = ("http://fow.kr/find/" + lolid)
     html = get_html(URL)
     soup = BeautifulSoup(html, 'html.parser')
     # print(soup)
     stat = []
     rank_available = True
-    """
-    fow 구조
-    SummonerRatingMedium > TierRankInfo > RankType, TierRank, TierInfo > LeaguePoints, WinLose > wins, losses, winratio 
-
-    :returns : stat = [profile_link, rank_img_link, ]
-    :returns : stat = [프로필이미지링크, 티어아이콘링크, 랭크타입, 현재티어, 점수, 승, 패, 승률]
-    """
 
     profile = soup.find('div', {'class': 'profile'})
-    profile_link = profile.find('img')['src']
+    # 프로필 존재
+    if profile is not None:
+        try:
+            profile_link = profile.find('img')['src']
+            rank = soup.find('div', {'class': 'table_summary'})
 
-    rank = soup.find('div', {'class': 'table_summary'})
+            rank_img_link = rank.find('img')['src']
 
-    rank_img_link = rank.find('img')['src']
+            rank_info = soup.select("div.table_summary > div:nth-child(2) > div:nth-child(2)")
+            rank_info = str(rank_info[0].text)
+            rank_info = rank_info.replace('\t', '')
+            rank_info = str(rank_info).split('\n')
+            rank_info = list(filter(None, rank_info))
 
-    rank_info = soup.select("div.table_summary > div:nth-child(2) > div:nth-child(2)")
-    rank_info = str(rank_info[0].text)
-    rank_info = rank_info.replace('\t', '')
-    rank_info = str(rank_info).split('\n')
-    rank_info = list(filter(None, rank_info))
+            if len(rank_info) >= 5:
+                account_status = 2
+                stat.append(account_status)
 
-    if len(rank_info)>=5:
-        rank_available = True
-        stat.append(rank_available)
+                rank_num = rank_info[0].strip("랭킹: ")
+                # print(rank_num)
+                rank_type = rank_info[1].strip("리그: ")
+                # print(rank_type)
+                rank_tier = rank_info[2].strip("등급: ")
+                # print(rank_tier)
+                # print(rank_info[3])
+                rank_point = rank_info[3].strip("리그 ")
+                rank_point = rank_point.strip("포인트: ")
+                # print(rank_point)
+                rank_test = rank_info[4].strip("승급전: ")
+                # print(rank_test)
+                rank_result = rank_info[5]
+                # print(rank_result)
 
-        rank_num = rank_info[0].strip("랭킹: ")
-        # print(rank_num)
-        rank_type = rank_info[1].strip("리그: ")
-        # print(rank_type)
-        rank_tier = rank_info[2].strip("등급: ")
-        # print(rank_tier)
-        # print(rank_info[3])
-        rank_point = rank_info[3].strip("리그 ")
-        rank_point = rank_point.strip("포인트: ")
-        # print(rank_point)
-        rank_test = rank_info[4].strip("승급전: ")
-        # print(rank_test)
-        rank_result = rank_info[5]
-        # print(rank_result)
-
-        stat.append(profile_link)
-        stat.append(rank_img_link)
-        stat.append(rank_num)
-        stat.append(rank_type)
-        stat.append(rank_tier)
-        stat.append(rank_point)
-        stat.append(rank_test)
-        stat.append(rank_result)
+                stat.append(profile_link)
+                stat.append(rank_img_link)
+                stat.append(rank_num)
+                stat.append(rank_type)
+                stat.append(rank_tier)
+                stat.append(rank_point)
+                stat.append(rank_test)
+                stat.append(rank_result)
+            else:
+                account_status = 1
+                stat.append(account_status)
+                stat.append(profile_link)
+        # 예외처리 :
+        except AttributeError:
+            print("랭크 존재하지 않음")
+            account_status = 1
+            stat.append(account_status)
+            profile_link = profile.find('img')['src']
+            stat.append(profile_link)
+    # 프로필 비존재
     else:
-        rank_available = False
-        stat.append(rank_available)
+        try:
+            print("아이디 존재하지 않음")
+            account_status = 0
+            stat.append(account_status)
+        except AttributeError:
+            account_status = 0
+            stat.append(account_status)
 
+    # 아이디 상태, 프로필링크, 랭크이미지링크, 랭크순위, 랭크타입, 랭크티어, 랭크점수, 승급전, 랭크결과
     print(stat)
     return stat
 

@@ -10,6 +10,10 @@ import gegle
 import config
 
 
+logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a",
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+
 def time_now():
     now = datetime.now(timezone('Asia/Seoul'))
     return now
@@ -25,7 +29,7 @@ class aclient(discord.Client):
         if not self.synced:
             await tree.sync()
             self.synced = True
-        print(f'{self.user}이 시작되었습니다')  #  봇이 시작하였을때 터미널에 뜨는 말
+        logging.info(f'{self.user}이 시작되었습니다')  #  봇이 시작하였을때 터미널에 뜨는 말
         game = discord.Game('배붕봇')          # ~~ 하는중
         await self.change_presence(status=discord.Status.idle, activity=game)
 
@@ -59,6 +63,7 @@ async def 명령어(interaction: discord.Interaction):
                    # "* /해제 - 지옥 탈출"
                    "```")
     await interaction.response.send_message(command_msg, ephemeral = True)
+    logging.info(f"{interaction.user.display_name} - 명령어 사용 ")
 
 
 # @tree.command(name = '시간', description='시간')
@@ -73,11 +78,9 @@ async def 정보(interaction):
     # Discord 가입일
     # print(member.joined_at)
     joined_at = interaction.user.joined_at.strftime("%Y년 %m월 %d일 %R")
-    print(joined_at)
 
     # 서버 가입일
     created_at = interaction.user.created_at.strftime("%Y년 %m월 %d일 %R")
-    print(created_at)
 
     # 역할 리스트
     roles = interaction.user.roles
@@ -93,17 +96,17 @@ async def 정보(interaction):
     embed_userinfo.add_field(name="역할", value=role_list, inline=False)
 
     await interaction.response.send_message(embed=embed_userinfo, ephemeral=False)
+    logging.info(f"{interaction.user.display_name} - 정보 사용 ")
 
 
 @tree.command(name = '골라', description='입력한 항목중에서 무작위로 한개를 골라줍니다.')
 async def 골라(interaction : discord.Interaction, 항목: str):
-
-    print(항목)
     choice = str(항목).split(" ")
     choiceNum = random.randint(0, len(choice) - 1)
     choiceResult = choice[choiceNum]
     await interaction.response.send_message("`" +interaction.user.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.", ephemeral=False)
     # await ctx.send("`" + ctx.author.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.")
+    logging.info(f"{interaction.user.display_name} - 골라 사용 - {choiceResult} of {choice}")
 
 
 @tree.command(name = '뭐먹지', description='음식 메뉴를 골라줍니다.')
@@ -114,6 +117,7 @@ async def 뭐먹지(interaction : discord.Interaction):
     food_result = food_choice[food_num]
     print(food_result)
     await interaction.response.send_message(food_result)
+    logging.info(f"{interaction.user.display_name} - 뭐먹지 사용 - {food_result}")
 
 
 # 롤 전적 확인
@@ -122,25 +126,30 @@ async def 롤(interaction : discord.Interaction, 닉네임: str):
     now = time_now()
 
     stat = game_stat.get_lol_stat3(닉네임)
-    # [랭크여부, 프로필이미지링크, 티어아이콘링크, 순위, 랭크타입, 현재티어, 점수, 승급전, 승패승률]
+    # [계정상태, 프로필이미지링크, 티어아이콘링크, 순위, 랭크타입, 현재티어, 점수, 승급전, 승패승률]
 
     embed_stat = discord.Embed(color=0xdc6363, timestamp=now)
-    embed_stat.set_author(name=닉네임, url="https://fow.kr/find/" + 닉네임, icon_url="https:"+stat[1])
-    embed_stat.set_footer(text="from fow.kr", icon_url="https://z.fow.kr/fowkr_logo_small.png")
     # 대체 이미지 https://opgg-static.akamaized.net/images/site/about/img-logo-opgg.png
-    embed_stat.set_thumbnail(url="https:"+stat[2])
-    if stat[0]:
-        # embed_stat.add_field(name="소환사레벨", value=stat[2], inline=True)
-        # embed_stat.add_field(name="랭크타입", value=stat[4], inline=True)
-        embed_stat.add_field(name="현재티어", value=stat[5] + " " + stat[6], inline=False)
-        embed_stat.add_field(name="순위", value=stat[3], inline=False)
-        embed_stat.add_field(name="승패", value=stat[8], inline=False)
+    if stat[0] == 0:
+        embed_stat.set_author(name=닉네임, url="https://fow.kr/find/" + 닉네임)
+        embed_stat.add_field(name="No User", value="그런 이름의 사용자는 없습니다.")
     else:
-        embed_stat.add_field(name="Unranked", value="랭크 전적이 존재하지 않는 유저입니다.")
-
+        embed_stat.set_author(name=닉네임, url="https://fow.kr/find/" + 닉네임, icon_url="https:" + stat[1])
+        embed_stat.set_footer(text="from fow.kr", icon_url="https://z.fow.kr/fowkr_logo_small.png")
+        if stat[0] == 2:
+            embed_stat.set_thumbnail(url="https:" + stat[2])
+            # embed_stat.add_field(name="소환사레벨", value=stat[2], inline=True)
+            # embed_stat.add_field(name="랭크타입", value=stat[4], inline=True)
+            embed_stat.add_field(name="현재티어", value=stat[5] + " " + stat[6], inline=False)
+            embed_stat.add_field(name="순위", value=stat[3], inline=False)
+            embed_stat.add_field(name="승패", value=stat[8], inline=False)
+        elif stat[0] == 1:
+            embed_stat.add_field(name="Unranked", value="랭크 전적이 존재하지 않는 유저입니다.")
     # embed_stat.add_field(name="최근전적", value=stat[0])
 
     await interaction.response.send_message(embed=embed_stat, ephemeral=False)
+    logging.info(f"{interaction.user.display_name} - 롤 사용 - {닉네임}")
+
 
 
 # 롤체 전적 확인
@@ -168,6 +177,7 @@ async def 롤체(interaction : discord.Interaction, 닉네임: str):
         embed_stat.add_field(name="Unranked", value="랭크 전적이 존재하지 않는 유저입니다.")
 
     await interaction.response.send_message(embed=embed_stat, ephemeral=False)
+    logging.info(f"{interaction.user.display_name} - 롤체 사용 - {닉네임}. {stat[3]}")
 
 
 # 개념글 확인
@@ -192,20 +202,26 @@ async def 념글(interaction: discord.Interaction, 갤러리: discord.app_comman
     embed_gegl = discord.Embed(color=0xdc6363)
     embed_gegl.add_field(name=gallery_name + " 개념글", value=gegl_value, inline=False)
     await interaction.response.send_message(embed=embed_gegl, ephemeral=False)
+    logging.info(f"{interaction.user.display_name} - 념글 사용 - {갤러리}")
 
 
 # 개드립 확인
 @tree.command(name='개드립', description='Dogdrip.net 개드립을 보여줍니다.')
 async def 개드립(interaction : discord.Interaction):
-    gegl = gegle.get_dogdrip()
-    gegl_value: str = ""
-    for i in range(len(gegl)):
-        gegl_value = gegl_value + "{}. [{} [{}]]({}) \n".format(i+1, gegl[i][0], gegl[i][1], gegl[i][2])
-    embed_gegl = discord.Embed(color=0xdc6363)
-    embed_gegl.add_field(name="개드립", value=gegl_value, inline=False)
-    await interaction.response.send_message(embed=embed_gegl, ephemeral=False)
+    try:
+        gegl = gegle.get_dogdrip()
+        gegl_value: str = ""
+        for i in range(len(gegl)):
+            gegl_value = gegl_value + "{}. [{} [{}]]({}) \n".format(i+1, gegl[i][0], gegl[i][1], gegl[i][2])
+        embed_gegl = discord.Embed(color=0xdc6363)
+        embed_gegl.add_field(name="개드립", value=gegl_value, inline=False)
+        await interaction.response.send_message(embed=embed_gegl, ephemeral=False)
+    except:
+        await interaction.response.send_message("전송 실패", ephemeral=False)
+    logging.info(f"{interaction.user.display_name} - 개드립 사용")
+    
 
-client.run(config.TOKEN)
+client.run(config.TOKEN1)
 
 # TEST 용 토큰
 # client.run(config.TOKEN1)
