@@ -106,8 +106,8 @@ async def 골라(interaction: discord.Interaction, 항목: str):
     choice = str(항목).split(" ")
     choiceNum = random.randint(0, len(choice) - 1)
     choiceResult = choice[choiceNum]
-    await interaction.response.send_message("`" +interaction.user.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.", ephemeral=False)
-    # await ctx.send("`" + ctx.author.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.")
+    await interaction.response.send_message(
+        "`" +interaction.user.display_name + "`님의 선택은 __**" + choiceResult + "**__ 입니다.", ephemeral=False)
     logging.info(f"{interaction.user.display_name} - 골라 사용 - {choiceResult} of {choice}")
 
 
