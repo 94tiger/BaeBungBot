@@ -12,7 +12,9 @@ pattern = re.compile((r'\s+'))
 
 def get_html(url):
     # headers = {'Accept-Language': 'ko'}
-    headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; moto g(6) play) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Mobile Safari/537.36', 'Accept-Language': 'ko', 'referer': 'http://www.naver.com'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; moto g(6) play) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Mobile Safari/537.36',
+               'Accept-Language': 'ko',
+               'referer': 'http://www.naver.com'}
 
     _html = ""
     resp = requests.get(url, headers=headers)
@@ -374,7 +376,7 @@ def get_lol_stat3(lolid):
                 2: 랭크 전적 있음
     """
 
-    URL = ("http://fow.kr/find/" + lolid)
+    URL = ("https://fow.kr/find/" + lolid)
     html = get_html(URL)
     soup = BeautifulSoup(html, 'html.parser')
     # print(soup)
